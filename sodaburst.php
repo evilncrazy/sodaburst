@@ -1,20 +1,26 @@
 <?php
 class SodaTuple {
-   public function __construct($fields = array()) {
+   public function __construct(array $fields = array()) {
       foreach($fields as $field => $value) {
-         $this->{$field} = $value;
+         // if field is a number, then we assume that this element is not associative,
+         // so we treat value as the name of a field in the tuple with default value of null
+         if(is_numeric($field)) $this->{$value} = null;
+         else $this->{$field} = $value;
       }
    }
    
    public function __call($name, $args) {
-      if(count($args)) return $this->{$name} = $args[0]; // set method
+      if(count($args)) {
+         if(isset($this->{$name})) return $this->{$name} = $args[0]; // set method
+         else throw new Exception('Property ' . $name . ' does not exist in record');
+      }
       return $this->{$name}; // get method
    }
    
    public function unpack($fields = array()) {
       $unpacked = array();
       $self = (array)$this;
-      // unpack in the order of fields given
+      // unpack elements in the order of fields given
       foreach((is_array($fields) ? $fields : func_get_args()) as $field) {
          if(isset($self[$field])) $unpacked[] = $self[$field];
       }
@@ -29,6 +35,7 @@ class SodaTuple {
       $pattern = is_array($pattern) ? $pattern : func_get_args();
       $self = $this->unpack();
       for($i = 0; $i < min(count($self), count($pattern)); $i++) {
+         // allow wildcard nulls
          if($pattern[$i] !== null && $self[$i] !== $pattern[$i]) return false;
       }
       return true;
