@@ -18,11 +18,20 @@ class SodaTuple {
       foreach((is_array($fields) ? $fields : func_get_args()) as $field) {
          if(isset($self[$field])) $unpacked[] = $self[$field];
       }
-      return count($unpacked) ? $unpacked : $self; // returns all fields if none was specified
+      return count($unpacked) ? $unpacked : array_values($self); // returns all fields if none was specified
    }
    
    public function fields() {
       return array_keys((array)$this);
+   }
+   
+   public function match($pattern) {
+      $pattern = is_array($pattern) ? $pattern : func_get_args();
+      $self = $this->unpack();
+      for($i = 0; $i < min(count($self), count($pattern)); $i++) {
+         if($pattern[$i] !== null && $self[$i] !== $pattern[$i]) return false;
+      }
+      return true;
    }
    
    public function __toString() {
