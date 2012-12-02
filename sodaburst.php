@@ -7,12 +7,18 @@ class SodaTuple {
    }
    
    public function __call($name, $args) {
-      if(count($args)) return $this->{$name} = $args[0]; /* set method */
-      return $this->{$name}; /* get method */
+      if(count($args)) return $this->{$name} = $args[0]; // set method
+      return $this->{$name}; // get method
    }
    
-   public function unpack() {
-      return array_values((array)$this);
+   public function unpack($fields = array()) {
+      $unpacked = array();
+      $self = (array)$this;
+      // unpack in the order of fields given
+      foreach((is_array($fields) ? $fields : func_get_args()) as $field) {
+         if(isset($self[$field])) $unpacked[] = $self[$field];
+      }
+      return count($unpacked) ? $unpacked : $self; // returns all fields if none was specified
    }
    
    public function fields() {
@@ -24,7 +30,7 @@ class SodaTuple {
    }
 }
 
-/* Factory function for creating named tuples */
+// factory function for creating named tuples
 function soda($fields = array()) {
    return new SodaTuple($fields);
 }
