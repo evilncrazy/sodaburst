@@ -1,7 +1,7 @@
 Sodaburst
 =========
 
-Create lightweight named tuples in PHP. Essentially, named tuples are wrappers of associative arrays, 
+Create lightweight records (named tuples) in PHP. Essentially, records are wrappers of associative arrays, 
 allowing them to be used as objects. Sodaburst provides an easy way to create simple, throwaway data structures.
 
 ```php
@@ -23,4 +23,4 @@ Features
 
 Usage
 =====
-Simply include ```sodaburst.php``` in your PHP code. Call ```soda()``` on an assocative array to create a named tuple.
+Simply include ```sodaburst.php``` in your PHP code. Call ```soda()``` on an assocative array to create a record.
