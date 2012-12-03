@@ -1,7 +1,6 @@
 <?php
-class SodaTuple {
+class SodaTuple implements Countable, ArrayAccess {
    public function __construct(array $fields = array()) {
-      $fields = is_array($fields) ? $fields : func_get_args();
       foreach($fields as $field => $value) {
          // if field is a number, then we assume that this element is not associative,
          // so we treat value as the name of a field in the tuple with default value of null
@@ -12,11 +11,8 @@ class SodaTuple {
    
    public function __call($name, $args) {
       if(substr($name, 0, 4) == 'set_' || substr($name, 0, 4) == 'get_') $name = substr($name, 4);
-      if(count($args)) {
-         if(isset($this->{$name})) return $this->{$name} = $args[0]; // set method
-         else throw new Exception('Property ' . $name . ' does not exist in record');
-      }
-      return $this->{$name}; // get method
+      if(count($args)) return $this->offsetSet($name, $args[0]); // set method
+      return $this->offsetGet($name); // get method
    }
    
    public function unpack($fields = array()) {
@@ -38,6 +34,38 @@ class SodaTuple {
    
    public function assoc() {
       return (array)$this;
+   }
+
+   /* array access interface */
+   public function offsetExists($offset) {
+      if(is_numeric($offset)) return $offset >= 0 && $offset < count($this->fields());
+      else return in_array($offset, $this->fields());
+   }
+    
+   public function offsetUnset($offset) {
+      $this->{$offset} = null;
+   }
+    
+   public function offsetGet($offset) {
+      if(!$this->offsetExists($offset)) return null;
+      if(is_numeric($offset)) {
+         $keys = $this->fields();
+         return $this->{$keys[$offset]};
+      } else return $this->{$offset};
+   }
+
+   public function offsetSet($offset, $value) {
+      if(!is_null($offset) && $this->offsetExists($offset)) { /* immutable */
+         if(is_numeric($offset)) {
+            $keys = $this->fields();
+            $this->{$keys[$offset]} = $value;
+         } else $this->{$offset} = $value;
+      } else throw new Exception((is_numeric($offset) ? 'Offset ' : 'Property ') . $offset . ' does not exist in record');
+   }
+   
+   /* countable interface */
+   public function count() {
+      return count($this->fields());
    }
    
    public function match($pattern) {
@@ -64,5 +92,5 @@ class SodaTuple {
 
 // factory function for creating named tuples
 function soda($fields = array()) {
-   return new SodaTuple($fields);
+   return new SodaTuple(is_array($fields) ? $fields : func_get_args());
 }
