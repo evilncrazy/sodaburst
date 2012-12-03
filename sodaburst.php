@@ -11,6 +11,7 @@ class SodaTuple {
    }
    
    public function __call($name, $args) {
+      if(substr($name, 0, 4) == 'set_' || substr($name, 0, 4) == 'get_') $name = substr($name, 4);
       if(count($args)) {
          if(isset($this->{$name})) return $this->{$name} = $args[0]; // set method
          else throw new Exception('Property ' . $name . ' does not exist in record');
