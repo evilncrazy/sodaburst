@@ -1,6 +1,7 @@
 <?php
 class SodaTuple {
    public function __construct(array $fields = array()) {
+      $fields = is_array($fields) ? $fields : func_get_args();
       foreach($fields as $field => $value) {
          // if field is a number, then we assume that this element is not associative,
          // so we treat value as the name of a field in the tuple with default value of null
@@ -20,9 +21,12 @@ class SodaTuple {
    public function unpack($fields = array()) {
       $unpacked = array();
       $self = (array)$this;
+      $values = array_values($self);
+      
       // unpack elements in the order of fields given
       foreach((is_array($fields) ? $fields : func_get_args()) as $field) {
-         if(isset($self[$field])) $unpacked[] = $self[$field];
+         if(is_numeric($field)) $unpacked[] = $values[$field];
+         else if(isset($self[$field])) $unpacked[] = $self[$field];
       }
       return count($unpacked) ? $unpacked : array_values($self); // returns all fields if none was specified
    }
@@ -39,6 +43,13 @@ class SodaTuple {
          if($pattern[$i] !== null && $self[$i] !== $pattern[$i]) return false;
       }
       return true;
+   }
+   
+   public function copy($values = array()) {
+      $values = is_array($values) ? $values : func_get_args();
+      if(count($values))
+         return new SodaTuple(array_combine($this->fields(), array_pad($values, count($this->fields()), null)));
+      else return new SodaTuple((array)$this);
    }
    
    public function __toString() {
