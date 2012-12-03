@@ -36,6 +36,10 @@ class SodaTuple {
       return array_keys((array)$this);
    }
    
+   public function assoc() {
+      return (array)$this;
+   }
+   
    public function match($pattern) {
       $pattern = is_array($pattern) ? $pattern : func_get_args();
       $self = $this->unpack();
